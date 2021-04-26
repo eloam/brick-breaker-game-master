@@ -36,11 +36,15 @@ export class Ghost extends Sprite {
             // this.pos.x = 229;
             // this.pos.y = 277;
 
-            if (this.canChangeDirection()) {
-                this.currentDirection = this.getNewDirection();
+            if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
+                this.currentDirection = this.getNewDirection();   
             }
 
-            this.makeMovement(this.currentDirection);
+            if (this.canMove(this.currentDirection)) {
+                this.makeMovement(this.currentDirection);
+            } else {
+                this.currentDirection = this.getNewDirection();
+            }
 
 
             /*
@@ -66,8 +70,10 @@ export class Ghost extends Sprite {
     collide() {
         this.onCollide = function (sprite: Sprite) {
             if (sprite instanceof Wall) {
-                this.rollbackMovement();
-                this.currentDirection = this.getNewDirection();
+               // this.rollbackMovement();
+                //this.currentDirection = this.getNewDirection();
+                //console.log(this);
+                //debugger;
             }
             if (sprite instanceof PacMan) {
                 sprite.destroy();
@@ -95,6 +101,10 @@ export class Ghost extends Sprite {
     }
 
     makeMovement(movement : Direction) {
+        var x = this.pos.x;
+        var y = this.pos.y;
+
+
         switch (movement) {
             case Direction.Right:
                 this.moveRight();
@@ -111,6 +121,13 @@ export class Ghost extends Sprite {
             default:
                 break;
         }
+
+        if (x !== this.pos.x || y !== this.pos.y) {
+            console.log(this);
+            console.log(this.pos);
+        } else {
+            debugger;
+        }
     }
 
     getNewDirection() {
@@ -118,39 +135,42 @@ export class Ghost extends Sprite {
         const directions: Direction[] = [];
 
         // Check si on peut aller en haut
-        this.canMove(Direction.Up) && directions.push(Direction.Up);
+        this.currentDirection !== Direction.Up && this.canMove(Direction.Up) && directions.push(Direction.Up);
 
         // Check si on peut aller en bas
-        this.canMove(Direction.Down) && directions.push(Direction.Down);
+        this.currentDirection !== Direction.Down &&this.canMove(Direction.Down) && directions.push(Direction.Down);
 
         // Check si on peut aller à gauche
-        this.canMove(Direction.Left) && directions.push(Direction.Left);
+        this.currentDirection !== Direction.Left && this.canMove(Direction.Left) && directions.push(Direction.Left);
 
         // Check si on peut aller à droite
-        this.canMove(Direction.Right) && directions.push(Direction.Right);
+        this.currentDirection !== Direction.Right && this.canMove(Direction.Right) && directions.push(Direction.Right);
 
-
-        return directions[Math.floor(Math.random() * directions.length)];
+        if (directions.length > 0) {
+            return directions[Math.floor(Math.random() * directions.length)];
+        } else {
+            return this.currentDirection;
+        }
     }
 
     canMove(direction : Direction): Boolean { // Liste de tous les murs du niveau
         const wallItems = this.gameCanvas.sprites.list().filter(item => item instanceof Wall);
 
         // Clone de l'objet
-        let currentSprite: Sprite = new Sprite(this.pos, this.size);
+        let currentSprite: Sprite = new Sprite(this.pos.x, this.pos.y, this.size.w, this.size.h);
 
         switch (direction) {
             case Direction.Up:
-                currentSprite.pos.y -= 1;
+                currentSprite.pos.y -= this.speed;
                 break;
             case Direction.Down:
-                currentSprite.pos.y += 1;
+                currentSprite.pos.y += this.speed;
                 break;
             case Direction.Left:
-                currentSprite.pos.x -= 1;
+                currentSprite.pos.x -= this.speed;
                 break;
             case Direction.Right:
-                currentSprite.pos.x += 1;
+                currentSprite.pos.x += this.speed;
                 break;
             default:
                 break;
@@ -171,8 +191,8 @@ export class Ghost extends Sprite {
         if (!this.isMagnetizedOnTheGrid()) return false;
 
         const min = 0;
-        const max = 5;
-        return Math.floor(Math.random() * (max - min +1)) + min === max
+        const max = 10;
+        return Math.floor(Math.random() * (max - min + 1)) + min === max
     }
 
     moveRight() {
