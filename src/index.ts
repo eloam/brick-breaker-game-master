@@ -17,7 +17,7 @@ const game: GameCanvas = new GameCanvas(document.body, 710, 810);
 game.backgroundColor = '#000';
 
 
-new TileMapDebug(game, 12);
+//new TileMapDebug(game, 12);
 
 new PacGum(game, 2, 2);
 new PacGum(game, 3, 2);
@@ -606,15 +606,18 @@ new Wall(game, 24, 32, 'hi', 11);
 new Wall(game, 27, 26, 'vi', 2);
 new Wall(game, 31, 26, 'vi', 2);
 
+new Wall(game, 56, 30, 'vi', 1);
+new Wall(game, 2, 30, 'vi', 1);
+
 new Gate(game, 27, 26);
 
 new PacMan(game, 28, 35);
 
 new PlayerScoreBoard(game, 2, 64);
 
-new Ghost(game, 28, 29, InkyGhostSkin);
-new Ghost(game, 28, 29, BlinkyGhostSkin);
-new Ghost(game, 28, 29, PinkyGhostSkin);
-new Ghost(game, 28, 29, ClydeGhostSkin);
+new Ghost(game, 24, 29, InkyGhostSkin);
+new Ghost(game, 27, 29, BlinkyGhostSkin);
+new Ghost(game, 29, 29, PinkyGhostSkin);
+new Ghost(game, 32, 29, ClydeGhostSkin);
 
 

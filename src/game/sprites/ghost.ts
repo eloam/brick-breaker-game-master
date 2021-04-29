@@ -1,9 +1,10 @@
-import {GameCanvas} from "../../engine/game-canvas";
-import {Sprite} from "../../engine/objects/sprite";
-import {SpriteCanvasRenderingContext2D} from "../../engine/renderer/sprite-canvas-rendering-context-2d";
-import {Direction} from "../utilities/enums";
-import {Wall} from "./wall";
-import {PacMan} from "./pacman";
+import { GameCanvas } from "../../engine/game-canvas";
+import { Sprite } from "../../engine/objects/sprite";
+import { SpriteCanvasRenderingContext2D } from "../../engine/renderer/sprite-canvas-rendering-context-2d";
+import { Direction } from "../utilities/enums";
+import { Wall } from "./wall";
+import { PacMan } from "./pacman";
+import { Gate } from "./gate";
 
 export class Ghost extends Sprite {
 
@@ -12,7 +13,9 @@ export class Ghost extends Sprite {
 
     private inky : HTMLImageElement;
 
-    constructor(private gameCanvas : GameCanvas, x : number, y : number, skin: any) {
+    private directions: Array<Direction>;
+
+    constructor(private gameCanvas : GameCanvas, x : number, y : number, skin : any) {
         super(x * 12 + 1, y * 12 + 1, 3 * 12 - 2, 3 * 12 - 2);
 
         this.inky = new Image();
@@ -22,6 +25,7 @@ export class Ghost extends Sprite {
         this.collide();
 
         this.currentDirection = Direction.Up;
+        this.directions = new Array<Direction>();
 
         // this.commands();
         gameCanvas.sprites.add(this);
@@ -32,37 +36,15 @@ export class Ghost extends Sprite {
 
             renderer.drawImage(this.inky, 0, 0, this.size.w, this.size.h);
 
-
-            // this.pos.x = 229;
-            // this.pos.y = 277;
-
             if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
-                this.currentDirection = this.getNewDirection();   
+                this.currentDirection = this.getNewDirection();
             }
 
             if (this.canMove(this.currentDirection)) {
                 this.makeMovement(this.currentDirection);
-            } else {
-                this.currentDirection = this.getNewDirection();
             }
 
-
-            /*
-            if (this.tryNextMovement === false) {
-                this.tryNextMovement = null;
-            }
-
-            if (this.tryNextMovement === true) {
-                this.movementDirection = this.nextMovementDirection;
-                this.tryNextMovement = false;
-            }
-
-            if (this.tryNextMovement === null) {
-                this.tryNextMovement = true;
-            }*/
-
-
-            //this.debug(renderer);
+             //this.debug(renderer);
         }
 
     }
@@ -70,12 +52,8 @@ export class Ghost extends Sprite {
     collide() {
         this.onCollide = function (sprite: Sprite) {
             if (sprite instanceof Wall) {
-               // this.rollbackMovement();
-                //this.currentDirection = this.getNewDirection();
-                //console.log(this);
-                //debugger;
             }
-            if (sprite instanceof PacMan) {
+            else if (sprite instanceof PacMan) {
                 sprite.destroy();
             }
         }
@@ -121,56 +99,53 @@ export class Ghost extends Sprite {
             default:
                 break;
         }
-
-        if (x !== this.pos.x || y !== this.pos.y) {
-            console.log(this);
-            console.log(this.pos);
-        } else {
-            debugger;
-        }
     }
 
-    getNewDirection() {
+    getNewDirection() { 
         // Liste des directions possibles
-        const directions: Direction[] = [];
-
-        // Check si on peut aller en haut
-        this.currentDirection !== Direction.Up && this.canMove(Direction.Up) && directions.push(Direction.Up);
-
-        // Check si on peut aller en bas
-        this.currentDirection !== Direction.Down &&this.canMove(Direction.Down) && directions.push(Direction.Down);
-
-        // Check si on peut aller à gauche
-        this.currentDirection !== Direction.Left && this.canMove(Direction.Left) && directions.push(Direction.Left);
-
-        // Check si on peut aller à droite
-        this.currentDirection !== Direction.Right && this.canMove(Direction.Right) && directions.push(Direction.Right);
+        const directions: Array<Direction> = this.getPossibleMoveDirections();
 
         if (directions.length > 0) {
-            return directions[Math.floor(Math.random() * directions.length)];
+            return directions[this.getRandomInt(directions.length) - 1];
         } else {
             return this.currentDirection;
         }
     }
 
-    canMove(direction : Direction): Boolean { // Liste de tous les murs du niveau
-        const wallItems = this.gameCanvas.sprites.list().filter(item => item instanceof Wall);
+    getPossibleMoveDirections(): Array<Direction> {
+
+        const directions: Array<Direction> = [];
+
+        // Check si on peut aller en haut
+        this.canMove(Direction.Up) && directions.push(Direction.Up);
+
+        // Check si on peut aller en bas
+        this.canMove(Direction.Down) && directions.push(Direction.Down);
+
+        // Check si on peut aller à gauche
+        this.canMove(Direction.Left) && directions.push(Direction.Left);
+
+        // Check si on peut aller à droite
+        this.canMove(Direction.Right) && directions.push(Direction.Right);
+
+        return directions;
+    }
+
+    canMove(direction : Direction): Boolean { 
+        // Liste de tous les murs du niveau
+        const wallItems = this.gameCanvas.sprites.list().filter(item => item instanceof Wall || item instanceof Gate);
 
         // Clone de l'objet
         let currentSprite: Sprite = new Sprite(this.pos.x, this.pos.y, this.size.w, this.size.h);
 
         switch (direction) {
-            case Direction.Up:
-                currentSprite.pos.y -= this.speed;
+            case Direction.Up: currentSprite.pos.y -= this.speed;
                 break;
-            case Direction.Down:
-                currentSprite.pos.y += this.speed;
+            case Direction.Down: currentSprite.pos.y += this.speed;
                 break;
-            case Direction.Left:
-                currentSprite.pos.x -= this.speed;
+            case Direction.Left: currentSprite.pos.x -= this.speed;
                 break;
-            case Direction.Right:
-                currentSprite.pos.x += this.speed;
+            case Direction.Right: currentSprite.pos.x += this.speed;
                 break;
             default:
                 break;
@@ -179,20 +154,21 @@ export class Ghost extends Sprite {
         let index: number = 0;
         let finded: boolean = false;
 
-        while (index < wallItems.length && !finded) {
+        while (index < wallItems.length && ! finded) {
             finded = this.gameCanvas.sprites.checkColliders(currentSprite, wallItems[index]);
             index++;
         }
 
-        return !finded;
+        return ! finded;
     }
 
     canChangeDirection(): boolean {
-        if (!this.isMagnetizedOnTheGrid()) return false;
+        if (!this.isMagnetizedOnTheGrid()) 
+            return false;
+        
+        const directions: Array<Direction> = this.getPossibleMoveDirections();
 
-        const min = 0;
-        const max = 10;
-        return Math.floor(Math.random() * (max - min + 1)) + min === max
+        return this.directions.length !== directions.length && directions.length > 2;
     }
 
     moveRight() {
@@ -212,7 +188,9 @@ export class Ghost extends Sprite {
     }
 
     isMagnetizedOnTheGrid(): boolean {
+
         if (((this.pos.x % 12) - 1) === 0 && ((this.pos.y % 12) - 1) === 0) {
+            debugger;
             return true;
         }
 
@@ -221,5 +199,22 @@ export class Ghost extends Sprite {
 
     getRandomInt(max : number): number {
         return Math.floor(Math.random() * Math.floor(max)) + 1;
+    }
+
+    arrayCompare(array1 : Array<Direction>, array2 : Array<Direction>) {
+        if (!Array.isArray(array1) || !Array.isArray(array2) || array1.length !== array2.length) {
+            return false;
+        }
+
+        const arr1 = array1.concat().sort();
+        const arr2 = array2.concat().sort();
+
+        for (let i = 0; i < arr1.length; i++) {
+            if (arr1[i] !== arr2[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

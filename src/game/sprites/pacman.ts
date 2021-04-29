@@ -1,10 +1,10 @@
 import { GameCanvas } from "../../engine/game-canvas";
-import {Sprite} from "../../engine/objects/sprite";
-import {SpriteCanvasRenderingContext2D} from "../../engine/renderer/sprite-canvas-rendering-context-2d";
+import { Sprite } from "../../engine/objects/sprite";
+import { SpriteCanvasRenderingContext2D } from "../../engine/renderer/sprite-canvas-rendering-context-2d";
 import { Direction } from "../utilities/enums";
-import {PacGum} from "./pacgum";
+import { PacGum } from "./pacgum";
 import { PlayerScoreBoard } from "./player-score-board";
-import {Wall} from "./wall";
+import { Wall } from "./wall";
 import PacmanWakaWakaSoundEffect from '../ressources/sounds/PacmanWakaWakaSoundEffect.mp3';
 import PacmanOpeningSongSoundEffect from '../ressources/sounds/PacmanOpeningSongSoundEffect.mp3';
 
@@ -13,7 +13,7 @@ export class PacMan extends Sprite {
     private dir : 'positive' | 'negative' = 'positive';
     private frame : number = 0;
 
-    private speed = 2;
+    private speed = 3;
     private movementDirection: Direction = Direction.None;
     private nextMovementDirection: Direction = Direction.None;
     private precMovementDirection: Direction = Direction.None;
@@ -21,9 +21,8 @@ export class PacMan extends Sprite {
     private pacgumDestroySoundEffect: HTMLAudioElement;
 
     constructor(private gameCanvas: GameCanvas, x : number, y : number) {
-        //super(x * 12 + 1, y * 12 + 1, 3 * 12 - 2, 3 * 12 - 2);
         super(x * 12 + 1, y * 12 + 1, 3 * 12 - 2, 3 * 12 - 2);
-        //new Audio(PacmanOpeningSongSoundEffect).play();
+        new Audio(PacmanOpeningSongSoundEffect).play();
         this.pacgumDestroySoundEffect = new Audio(PacmanWakaWakaSoundEffect);
         this.update();
         this.collide();
@@ -76,12 +75,6 @@ export class PacMan extends Sprite {
             
 
             this.makeMovement();
-
-            /*if (this.frame === 0) {
-                console.log(`x: ${this.pos.x} | y: ${this.pos.y}`);
-            }*/
-
-            // this.debug(renderer);
         }
     }
 
