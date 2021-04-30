@@ -8,14 +8,14 @@ import { Gate } from "./gate";
 
 export class Ghost extends Sprite {
 
-    private speed = 2;
-    private currentDirection : Direction = Direction.None;
+    protected speed = 2;
+    protected currentDirection : Direction = Direction.None;
 
-    private inky : HTMLImageElement;
+    protected inky : HTMLImageElement;
 
-    private directions: Array<Direction>;
+    protected directions: Array<Direction>;
 
-    constructor(private gameCanvas : GameCanvas, x : number, y : number, skin : any) {
+    constructor(protected gameCanvas : GameCanvas, x : number, y : number, skin : any) {
         super(x * 12 + 1, y * 12 + 1, 3 * 12 - 2, 3 * 12 - 2);
 
         this.inky = new Image();
@@ -36,17 +36,21 @@ export class Ghost extends Sprite {
 
             renderer.drawImage(this.inky, 0, 0, this.size.w, this.size.h);
 
-            if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
-                this.currentDirection = this.getNewDirection();
-            }
-
-            if (this.canMove(this.currentDirection)) {
-                this.makeMovement(this.currentDirection);
-            }
+            this.ai();
 
              //this.debug(renderer);
         }
 
+    }
+
+    ai() {
+        if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
+            this.currentDirection = this.getNewDirection();
+        }
+
+        if (this.canMove(this.currentDirection)) {
+            this.makeMovement(this.currentDirection);
+        }
     }
 
     collide() {
@@ -190,7 +194,6 @@ export class Ghost extends Sprite {
     isMagnetizedOnTheGrid(): boolean {
 
         if (((this.pos.x % 12) - 1) === 0 && ((this.pos.y % 12) - 1) === 0) {
-            debugger;
             return true;
         }
 

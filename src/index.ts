@@ -12,6 +12,10 @@ import InkyGhostSkin from "./game/ressources/img/inky.png";
 import BlinkyGhostSkin from "./game/ressources/img/blinky.png";
 import ClydeGhostSkin from "./game/ressources/img/clyde.png";
 import PinkyGhostSkin from "./game/ressources/img/pinky.png";
+import { InkyGhost } from "./game/sprites/inky-ghost";
+import { BlinkyGhost } from "./game/sprites/blinky-ghost";
+import { PinkyGhost } from "./game/sprites/pinky-ghost";
+import { ClydeGhost } from "./game/sprites/clyde-ghost";
 
 const game: GameCanvas = new GameCanvas(document.body, 710, 810);
 game.backgroundColor = '#000';
@@ -615,9 +619,8 @@ new PacMan(game, 28, 35);
 
 new PlayerScoreBoard(game, 2, 64);
 
-new Ghost(game, 24, 29, InkyGhostSkin);
-new Ghost(game, 27, 29, BlinkyGhostSkin);
-new Ghost(game, 29, 29, PinkyGhostSkin);
-new Ghost(game, 32, 29, ClydeGhostSkin);
 
-
+new InkyGhost(game, 24, 29);
+new BlinkyGhost(game, 27, 29);
+new PinkyGhost(game, 29, 29);
+new ClydeGhost(game, 32, 29);
