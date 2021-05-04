@@ -45,7 +45,7 @@ export class Ghost extends Sprite {
 
     ai() {
         if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
-            this.currentDirection = this.getNewDirection();
+            this.currentDirection = this.getNewDirection(this.getPossibleMoveDirections());
         }
 
         if (this.canMove(this.currentDirection)) {
@@ -105,9 +105,7 @@ export class Ghost extends Sprite {
         }
     }
 
-    getNewDirection() { 
-        // Liste des directions possibles
-        const directions: Array<Direction> = this.getPossibleMoveDirections();
+    getNewDirection(directions: Array<Direction>): Direction { 
 
         if (directions.length > 0) {
             return directions[this.getRandomInt(directions.length) - 1];
