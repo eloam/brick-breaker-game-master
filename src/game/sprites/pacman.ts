@@ -7,6 +7,7 @@ import { PlayerScoreBoard } from "./player-score-board";
 import { Wall } from "./wall";
 import PacmanWakaWakaSoundEffect from '../ressources/sounds/PacmanWakaWakaSoundEffect.mp3';
 import PacmanOpeningSongSoundEffect from '../ressources/sounds/PacmanOpeningSongSoundEffect.mp3';
+import { Gate } from "./gate";
 
 export class PacMan extends Sprite {
 
@@ -14,9 +15,13 @@ export class PacMan extends Sprite {
     private frame : number = 0;
 
     private speed = 3;
+    private nextMovementFailTry: number = 10;
+
     private movementDirection: Direction = Direction.None;
     private nextMovementDirection: Direction = Direction.None;
     private precMovementDirection: Direction = Direction.None;
+
+    private tryNextMovement: number = this.nextMovementFailTry
 
     private pacgumDestroySoundEffect: HTMLAudioElement;
 
@@ -77,6 +82,39 @@ export class PacMan extends Sprite {
             this.makeMovement();
         }
     }
+
+
+    canMove(direction : Direction): Boolean { 
+        // Liste de tous les murs du niveau
+        const wallItems = this.gameCanvas.sprites.list().filter(item => item instanceof Wall || item instanceof Gate);
+
+        // Clone de l'objet
+        let currentSprite: Sprite = new Sprite(this.pos.x, this.pos.y, this.size.w, this.size.h);
+
+        switch (direction) {
+            case Direction.Up: currentSprite.pos.y -= this.speed;
+                break;
+            case Direction.Down: currentSprite.pos.y += this.speed;
+                break;
+            case Direction.Left: currentSprite.pos.x -= this.speed;
+                break;
+            case Direction.Right: currentSprite.pos.x += this.speed;
+                break;
+            default:
+                break;
+        }
+
+        let index: number = 0;
+        let finded: boolean = false;
+
+        while (index < wallItems.length && ! finded) {
+            finded = this.gameCanvas.sprites.checkColliders(currentSprite, wallItems[index]);
+            index++;
+        }
+
+        return ! finded;
+    }
+
 
     collide() {
         this.onCollide = function (sprite : Sprite) {
@@ -146,6 +184,8 @@ export class PacMan extends Sprite {
 
     commands() {
         document.addEventListener('keydown', e => {
+            this.tryNextMovement = this.nextMovementFailTry;
+
             switch (e.key) {
                 case 'ArrowRight':
                     if (this.isMagnetizedOnTheGrid()) {
@@ -212,8 +252,16 @@ export class PacMan extends Sprite {
 
     checkNextMovement() {
         if (this.isMagnetizedOnTheGrid() && this.nextMovementDirection !== Direction.None) {
-            this.movementDirection = this.nextMovementDirection;
-            this.nextMovementDirection = Direction.None;
+            if (this.canMove(this.nextMovementDirection) && this.tryNextMovement > 0) {
+                this.movementDirection = this.nextMovementDirection;
+                this.nextMovementDirection = Direction.None;
+            } else {
+                this.tryNextMovement -= 1;
+            }
+
+            if (this.tryNextMovement == 0) {
+                this.nextMovementDirection = Direction.None;
+            }
         }
     }
 
