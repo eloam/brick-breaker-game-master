@@ -5,9 +5,12 @@ import { Direction } from "../utilities/enums";
 import { PacGum } from "./pacgum";
 import { PlayerScoreBoard } from "./player-score-board";
 import { Wall } from "./wall";
+import { Gate } from "./gate";
+import { Ghost } from "./ghost";
+
 import PacmanWakaWakaSoundEffect from '../ressources/sounds/PacmanWakaWakaSoundEffect.mp3';
 import PacmanOpeningSongSoundEffect from '../ressources/sounds/PacmanOpeningSongSoundEffect.mp3';
-import { Gate } from "./gate";
+import PacmanDeathSoundEffect from '../ressources/sounds/pacman_death.mp3';
 
 export class PacMan extends Sprite {
 
@@ -17,21 +20,36 @@ export class PacMan extends Sprite {
     private speed = 3;
     private nextMovementFailTry: number = 10;
 
+    private playerscore!: PlayerScoreBoard
+
+    // OLD
     private movementDirection: Direction = Direction.None;
     private nextMovementDirection: Direction = Direction.None;
     private precMovementDirection: Direction = Direction.None;
 
     private tryNextMovement: number = this.nextMovementFailTry
+    // END OLD
+
+
+    private spriteOrientation: Direction = Direction.None;
+    private currentDirection: Direction = Direction.None;
+    private nextDirection: Direction = Direction.None;
+
+
+
 
     private pacgumDestroySoundEffect: HTMLAudioElement;
 
     constructor(private gameCanvas: GameCanvas, x : number, y : number) {
         super(x * 12 + 1, y * 12 + 1, 3 * 12 - 2, 3 * 12 - 2);
+
         new Audio(PacmanOpeningSongSoundEffect).play();
         this.pacgumDestroySoundEffect = new Audio(PacmanWakaWakaSoundEffect);
+
         this.update();
         this.collide();
         this.commands();
+
         gameCanvas.sprites.add(this);
     }
 
@@ -46,30 +64,7 @@ export class PacMan extends Sprite {
 
             const fltOpen = this.frame / 20;
 
-
-            let spriteDirection = 0;
-
-    
-            switch (this.movementDirection || this.precMovementDirection) {
-                case Direction.Right:
-                    spriteDirection = 0;
-                    break;
-                case Direction.Up:
-                    spriteDirection = 0.5;
-                    break;
-                case Direction.Left:
-                    spriteDirection = 1;
-                    break;
-                case Direction.Down:
-                    spriteDirection = 1.5;
-                    break;
-                default:
-                    spriteDirection = 0;
-                    break;
-            }
-
-
-            renderer.arc(this.size.w / 2, this.size.w / 2, this.size.w / 2, (fltOpen * 0.2 - spriteDirection) * Math.PI, (2 - fltOpen * 0.2 - spriteDirection) * Math.PI);
+            renderer.arc(this.size.w / 2, this.size.w / 2, this.size.w / 2, (fltOpen * 0.2 - this.getSpriteOrientation()) * Math.PI, (2 - fltOpen * 0.2 - this.getSpriteOrientation()) * Math.PI);
             renderer.lineTo(this.size.w / 2, this.size.w / 2).closePath();
             renderer.fillStyle('#ff0').fill();
             renderer.strokeStyle('#000').stroke();
@@ -80,6 +75,9 @@ export class PacMan extends Sprite {
             
 
             this.makeMovement();
+
+
+            //this.debug(renderer);
         }
     }
 
@@ -119,15 +117,31 @@ export class PacMan extends Sprite {
     collide() {
         this.onCollide = function (sprite : Sprite) {
             if (sprite instanceof Wall) {
-                this.rollbackMovement();
-                this.precMovementDirection = this.movementDirection;
-                this.movementDirection = Direction.None;
+                this.currentDirection = Direction.None;
+                this.nextDirection = Direction.None;
             }
 
             if (sprite instanceof PacGum) {
-                (this.gameCanvas.sprites.list().filter(item => item instanceof PlayerScoreBoard)[0] as PlayerScoreBoard).incrementPlayerScore(10);
+
+                if (this.playerscore == undefined) {
+                    this.playerscore = this.gameCanvas.sprites.list().filter(item => item instanceof PlayerScoreBoard)[0] as PlayerScoreBoard;
+                }
+
+                this.playerscore.incrementPlayerScore(10);
                 this.getPacgumDestroySoundEffect();
                 sprite.destroy();
+
+
+                var pacgumCount = this.gameCanvas.sprites.list().filter(item => item instanceof PacGum).length;
+                console.log(pacgumCount);
+                if (pacgumCount == 1) {
+                    console.log('You Win !');
+                    this.destroy();
+                }
+            }
+
+            if (sprite instanceof Ghost) {
+                new Audio(PacmanDeathSoundEffect).play();
             }
         }
     }
@@ -144,76 +158,22 @@ export class PacMan extends Sprite {
         //this.pacgumDestroySoundEffect.loop = true;
     };
 
-    rollbackMovement() {
-        switch (this.movementDirection) {
-            case Direction.Right:
-                this.moveLeft();
-                break;
-            case Direction.Left:
-                this.moveRight();
-                break;
-            case Direction.Up:
-                this.moveDown();
-                break;
-            case Direction.Down:
-                this.moveUp();
-                break;
-            default:
-                break;
-        }
-    }
-
-    makeMovement() {
-        switch (this.movementDirection) {
-            case Direction.Right:
-                this.moveRight();
-                break;
-            case Direction.Left:
-                this.moveLeft();
-                break;
-            case Direction.Up:
-                this.moveUp();
-                break;
-            case Direction.Down:
-                this.moveDown();
-                break;
-            default:
-                break;
-        }
-    }
-
     commands() {
         document.addEventListener('keydown', e => {
             this.tryNextMovement = this.nextMovementFailTry;
 
             switch (e.key) {
                 case 'ArrowRight':
-                    if (this.isMagnetizedOnTheGrid()) {
-                        this.movementDirection = Direction.Right;
-                    } else {
-                        this.nextMovementDirection = Direction.Right;
-                    }
+                    this.setDirection(Direction.Right);
                     break;
                 case 'ArrowLeft':
-                    if (this.isMagnetizedOnTheGrid()) {
-                        this.movementDirection = Direction.Left;
-                    } else {
-                        this.nextMovementDirection = Direction.Left;
-                    }
+                    this.setDirection(Direction.Left);
                     break;
                 case 'ArrowUp':
-                    if (this.isMagnetizedOnTheGrid()) {
-                        this.movementDirection = Direction.Up;
-                    } else {
-                        this.nextMovementDirection = Direction.Up;
-                    }
+                    this.setDirection(Direction.Up);
                     break;
                 case 'ArrowDown':
-                    if (this.isMagnetizedOnTheGrid()) {
-                        this.movementDirection = Direction.Down;
-                    } else {
-                        this.nextMovementDirection = Direction.Down;
-                    }
+                    this.setDirection(Direction.Down);
                     break;
                 default:
                     break;
@@ -221,25 +181,88 @@ export class PacMan extends Sprite {
         });
     }
 
+    setDirection(value: Direction) {
+
+        if (this.canMove(value)) {
+            this.currentDirection = value;
+            this.spriteOrientation = value;
+        } else {
+            this.nextDirection = value;
+        }
+
+    }
+
+    getSpriteOrientation() {
+
+        let orientation: number;
+
+        switch (this.spriteOrientation) {
+            case Direction.Right:
+                orientation = 0;
+                break;
+            case Direction.Up:
+                orientation = 0.5;
+                break;
+            case Direction.Left:
+                orientation = 1;
+                break;
+            case Direction.Down:
+                orientation = 1.5;
+                break;
+            default:
+                orientation = 0;
+                break;
+        }
+
+        return orientation;
+    }
+
+    makeMovement() {
+
+        if (this.nextDirection !== Direction.None && this.canMove(this.nextDirection)) {
+            this.currentDirection = this.nextDirection;
+            this.spriteOrientation = this.currentDirection;
+            this.nextDirection = Direction.None;
+        }
+
+        if (this.currentDirection !== Direction.None && this.canMove(this.currentDirection)) {
+            this.move(this.currentDirection);
+        }
+    }
+
+    move(value: Direction) {
+        switch (value) {
+            case Direction.Right:
+                this.moveRight();
+                break;
+            case Direction.Up:
+                this.moveUp();
+                break;
+            case Direction.Left:
+                this.moveLeft();
+                break;
+            case Direction.Down:
+                this.moveDown();
+                break;
+            default:
+                break;
+        }
+    }
 
     moveRight() {
         this.pos.x += this.speed;
-        this.checkNextMovement();
     }
 
     moveLeft() {
         this.pos.x -= this.speed;
-        this.checkNextMovement();
     }
 
     moveUp() {
         this.pos.y -= this.speed;
-        this.checkNextMovement();
     }
 
     moveDown() {
         this.pos.y += this.speed;
-        this.checkNextMovement();
     }
 
     isMagnetizedOnTheGrid(): boolean {
@@ -248,21 +271,6 @@ export class PacMan extends Sprite {
         }
 
         return false;
-    }
-
-    checkNextMovement() {
-        if (this.isMagnetizedOnTheGrid() && this.nextMovementDirection !== Direction.None) {
-            if (this.canMove(this.nextMovementDirection) && this.tryNextMovement > 0) {
-                this.movementDirection = this.nextMovementDirection;
-                this.nextMovementDirection = Direction.None;
-            } else {
-                this.tryNextMovement -= 1;
-            }
-
-            if (this.tryNextMovement == 0) {
-                this.nextMovementDirection = Direction.None;
-            }
-        }
     }
 
 }

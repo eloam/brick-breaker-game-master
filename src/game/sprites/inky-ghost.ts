@@ -32,14 +32,17 @@ export class InkyGhost extends Ghost {
     
                 // PacMan
                 const pacman: Sprite = this.gameCanvas.sprites.list().filter(sprite => sprite instanceof PacMan)[0];
+
+                if (pacman) {
+                    // On detecte les directions possibles
+                    this.canMove(Direction.Left) && this.pos.x > pacman.pos.x && directions.push(Direction.Left);
+                    this.canMove(Direction.Right) && this.pos.x < pacman.pos.x && directions.push(Direction.Right);
+                    this.canMove(Direction.Up) && this.pos.y > pacman.pos.y && directions.push(Direction.Up);
+                    this.canMove(Direction.Down) && this.pos.y < pacman.pos.y && directions.push(Direction.Down);
+                }
     
-                // On detect les directions possibles
-                this.canMove(Direction.Left) && this.pos.x > pacman.pos.x && directions.push(Direction.Left);
-                this.canMove(Direction.Right) && this.pos.x < pacman.pos.x && directions.push(Direction.Right);
-                this.canMove(Direction.Up) && this.pos.y > pacman.pos.y && directions.push(Direction.Up);
-                this.canMove(Direction.Down) && this.pos.y < pacman.pos.y && directions.push(Direction.Down);
-    
-                this.currentDirection = this.getNewDirection(directions.length > 2 ? directions : this.getPossibleMoveDirections());
+
+                this.currentDirection = this.getNewDirection(directions.length > 1 ? directions : this.getPossibleMoveDirections());
             }
     
             if (this.canMove(this.currentDirection)) {
