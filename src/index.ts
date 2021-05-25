@@ -16,6 +16,7 @@ import { InkyGhost } from "./game/sprites/inky-ghost";
 import { BlinkyGhost } from "./game/sprites/blinky-ghost";
 import { PinkyGhost } from "./game/sprites/pinky-ghost";
 import { ClydeGhost } from "./game/sprites/clyde-ghost";
+import { SuperPacGum } from "./game/sprites/super-pacgum";
 
 const game: GameCanvas = new GameCanvas(document.body, 710, 810);
 game.backgroundColor = '#000';
@@ -38,7 +39,7 @@ new PacGum(game, 13, 2);
 
 
 new PacGum(game, 2, 3);
-new PacGum(game, 2, 4); // Super PacGum
+new SuperPacGum(game, 2, 4); // Super PacGum
 new PacGum(game, 2, 5);
 new PacGum(game, 2, 6);
 new PacGum(game, 2, 7);
@@ -111,7 +112,7 @@ new PacGum(game, 13, 9);
 
 new PacGum(game, 2, 22);
 new PacGum(game, 2, 23);
-new PacGum(game, 2, 24);        // Super PacGum
+new SuperPacGum(game, 2, 24);        // Super PacGum
 new PacGum(game, 3, 24); 
 new PacGum(game, 4, 24); 
 new PacGum(game, 4, 25); 
@@ -225,7 +226,7 @@ new PacGum(game, 25, 26);
 new PacGum(game, 25, 25); 
 new PacGum(game, 25, 24); 
 new PacGum(game, 26, 24); 
-new PacGum(game, 27, 24); // Super PacGum
+new SuperPacGum(game, 27, 24); // Super PacGum
 new PacGum(game, 27, 23); 
 new PacGum(game, 27, 22); 
 new PacGum(game, 27, 21); 
@@ -265,7 +266,7 @@ new PacGum(game, 25, 6);
 new PacGum(game, 24, 6); 
 new PacGum(game, 23, 6); 
 new PacGum(game, 27, 5);
-new PacGum(game, 27, 4); // Super PacGum
+new SuperPacGum(game, 27, 4); // Super PacGum
 new PacGum(game, 27, 3);
 new PacGum(game, 27, 2);
 new PacGum(game, 26, 2);

@@ -11,6 +11,7 @@ import { Ghost } from "./ghost";
 import PacmanWakaWakaSoundEffect from '../ressources/sounds/PacmanWakaWakaSoundEffect.mp3';
 import PacmanOpeningSongSoundEffect from '../ressources/sounds/PacmanOpeningSongSoundEffect.mp3';
 import PacmanDeathSoundEffect from '../ressources/sounds/pacman_death.mp3';
+import { SuperPacGum } from "./super-pacgum";
 
 export class PacMan extends Sprite {
 
@@ -18,25 +19,13 @@ export class PacMan extends Sprite {
     private frame : number = 0;
 
     private speed = 3;
-    private nextMovementFailTry: number = 10;
-
     private playerscore!: PlayerScoreBoard
-
-    // OLD
-    private movementDirection: Direction = Direction.None;
-    private nextMovementDirection: Direction = Direction.None;
-    private precMovementDirection: Direction = Direction.None;
-
-    private tryNextMovement: number = this.nextMovementFailTry
-    // END OLD
-
 
     private spriteOrientation: Direction = Direction.None;
     private currentDirection: Direction = Direction.None;
     private nextDirection: Direction = Direction.None;
 
-
-
+    private nextDirectionTimer: number = 0;
 
     private pacgumDestroySoundEffect: HTMLAudioElement;
 
@@ -76,8 +65,9 @@ export class PacMan extends Sprite {
 
             this.makeMovement();
 
-
-            //this.debug(renderer);
+            if (this.nextDirectionTimer > 0) {
+                this.nextDirectionTimer -= 1;
+            }
         }
     }
 
@@ -119,15 +109,20 @@ export class PacMan extends Sprite {
             if (sprite instanceof Wall) {
                 this.currentDirection = Direction.None;
                 this.nextDirection = Direction.None;
+                this.nextDirectionTimer = 0;
             }
 
-            if (sprite instanceof PacGum) {
+            if (sprite instanceof PacGum || sprite instanceof SuperPacGum) {
 
                 if (this.playerscore == undefined) {
                     this.playerscore = this.gameCanvas.sprites.list().filter(item => item instanceof PlayerScoreBoard)[0] as PlayerScoreBoard;
                 }
 
-                this.playerscore.incrementPlayerScore(10);
+                if (sprite instanceof PacGum) {
+                    this.playerscore.incrementPlayerScore(10);
+                } else {
+                    this.playerscore.incrementPlayerScore(50);
+                }
                 this.getPacgumDestroySoundEffect();
                 sprite.destroy();
 
@@ -160,8 +155,6 @@ export class PacMan extends Sprite {
 
     commands() {
         document.addEventListener('keydown', e => {
-            this.tryNextMovement = this.nextMovementFailTry;
-
             switch (e.key) {
                 case 'ArrowRight':
                     this.setDirection(Direction.Right);
@@ -188,6 +181,7 @@ export class PacMan extends Sprite {
             this.spriteOrientation = value;
         } else {
             this.nextDirection = value;
+            this.nextDirectionTimer = 30;
         }
 
     }
@@ -219,7 +213,7 @@ export class PacMan extends Sprite {
 
     makeMovement() {
 
-        if (this.nextDirection !== Direction.None && this.canMove(this.nextDirection)) {
+        if (this.nextDirection !== Direction.None && this.nextDirectionTimer > 0 && this.canMove(this.nextDirection)) {
             this.currentDirection = this.nextDirection;
             this.spriteOrientation = this.currentDirection;
             this.nextDirection = Direction.None;
@@ -263,14 +257,6 @@ export class PacMan extends Sprite {
 
     moveDown() {
         this.pos.y += this.speed;
-    }
-
-    isMagnetizedOnTheGrid(): boolean {
-        if (((this.pos.x % 12) - 1) === 0 && ((this.pos.y % 12) - 1) === 0) {
-            return true;
-        }
-
-        return false;
     }
 
 }

@@ -8,7 +8,7 @@ import { Gate } from "./gate";
 
 export class Ghost extends Sprite {
 
-    protected speed = 2;
+    protected speed = 3;
     protected currentDirection : Direction = Direction.None;
 
     protected inky : HTMLImageElement;
@@ -161,7 +161,7 @@ export class Ghost extends Sprite {
             index++;
         }
 
-        return ! finded;
+        return !finded;
     }
 
     canChangeDirection(): boolean {
