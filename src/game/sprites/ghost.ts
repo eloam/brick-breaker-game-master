@@ -5,21 +5,28 @@ import { Direction } from "../utilities/enums";
 import { Wall } from "./wall";
 import { PacMan } from "./pacman";
 import { Gate } from "./gate";
+import DazzledSkin from "./../../game/ressources/img/dazzled.png";
 
 export class Ghost extends Sprite {
 
+    private vulnerableState: boolean = false;
+    private vulnerableTimerDefault: number = 600;
+    private vulnerableTimer: number = this.vulnerableTimerDefault;
+
     protected speed = 3;
     protected currentDirection : Direction = Direction.None;
-
-    protected inky : HTMLImageElement;
-
+    protected defaultSkin : HTMLImageElement;
+    protected vulnerableSkin : HTMLImageElement;
     protected directions: Array<Direction>;
 
     constructor(protected gameCanvas : GameCanvas, x : number, y : number, skin : any) {
         super(x * 12 + 1, y * 12 + 1, 3 * 12 - 2, 3 * 12 - 2);
 
-        this.inky = new Image();
-        this.inky.src = skin;
+        this.defaultSkin = new Image();
+        this.defaultSkin.src = skin;
+
+        this.vulnerableSkin = new Image();
+        this.vulnerableSkin.src = DazzledSkin;
 
         this.update();
         this.collide();
@@ -34,11 +41,22 @@ export class Ghost extends Sprite {
     update() {
         this.onUpdate = function (renderer: SpriteCanvasRenderingContext2D) {
 
-            renderer.drawImage(this.inky, 0, 0, this.size.w, this.size.h);
+            
+            // Obtenir le skin courant
+            const currentSkin: HTMLImageElement = this.vulnerableState ? this.vulnerableSkin : this.defaultSkin;
 
+            renderer.drawImage(currentSkin, 0, 0, this.size.w, this.size.h);
             this.ai();
 
-             //this.debug(renderer);
+            if (this.vulnerableState) {
+                if (this.vulnerableTimer > 0) {
+                    this.vulnerableTimer -= 1;
+                } else {
+                    this.vulnerableState = false;
+                }
+            }
+
+            //this.debug(renderer);
         }
 
     }
@@ -217,5 +235,14 @@ export class Ghost extends Sprite {
         }
 
         return true;
+    }
+
+    setVulnerableState(): void {
+        this.vulnerableState = true;
+        this.vulnerableTimer = this.vulnerableTimerDefault;
+    }
+    
+    canEat(): boolean {
+        return this.vulnerableState;
     }
 }

@@ -122,6 +122,10 @@ export class PacMan extends Sprite {
                     this.playerscore.incrementPlayerScore(10);
                 } else {
                     this.playerscore.incrementPlayerScore(50);
+
+                    const ghost = this.gameCanvas.sprites.list().filter(item => item instanceof Ghost);
+                    ghost.forEach(item => (item as Ghost).setVulnerableState());
+
                 }
                 this.getPacgumDestroySoundEffect();
                 sprite.destroy();
