@@ -21,30 +21,34 @@ export class BlinkyGhost extends Ghost {
     }
 
     ai() {
-        if (this.clock > 0) {
+        if (this.isEaten) {
             super.ai();
-            this.clock -= 1;
         } else {
-            if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
-
-                // Liste des directions possibles
-                const directions: Array<Direction> = [];
+            if (this.clock > 0) {
+                super.ai();
+                this.clock -= 1;
+            } else {
+                if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
     
-                // PacMan
-                const pacman: Sprite = this.gameCanvas.sprites.list().filter(sprite => sprite instanceof PacMan)[0];
-    
-                // On detect les directions possibles
-                this.canMove(Direction.Left) && this.pos.x > pacman.pos.x && directions.push(Direction.Left);
-                this.canMove(Direction.Right) && this.pos.x < pacman.pos.x && directions.push(Direction.Right);
-                this.canMove(Direction.Up) && this.pos.y > pacman.pos.y && directions.push(Direction.Up);
-                this.canMove(Direction.Down) && this.pos.y < pacman.pos.y && directions.push(Direction.Down);
-    
-                this.currentDirection = this.getNewDirection(directions.length > 0 ? directions : this.getPossibleMoveDirections());
+                    // Liste des directions possibles
+                    const directions: Array<Direction> = [];
+        
+                    // PacMan
+                    const pacman: Sprite = this.gameCanvas.sprites.list().filter(sprite => sprite instanceof PacMan)[0];
+        
+                    // On detect les directions possibles
+                    this.canMove(Direction.Left) && this.pos.x > pacman.pos.x && directions.push(Direction.Left);
+                    this.canMove(Direction.Right) && this.pos.x < pacman.pos.x && directions.push(Direction.Right);
+                    this.canMove(Direction.Up) && this.pos.y > pacman.pos.y && directions.push(Direction.Up);
+                    this.canMove(Direction.Down) && this.pos.y < pacman.pos.y && directions.push(Direction.Down);
+        
+                    this.currentDirection = this.getNewDirection(directions.length > 0 ? directions : this.getPossibleMoveDirections());
+                }
+        
+                if (this.canMove(this.currentDirection)) {
+                    this.makeMovement(this.currentDirection);
+                }
             }
-    
-            if (this.canMove(this.currentDirection)) {
-                this.makeMovement(this.currentDirection);
-            }
-        }
+        }        
     }
 }
