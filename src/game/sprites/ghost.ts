@@ -6,17 +6,20 @@ import { Wall } from "./wall";
 import { PacMan } from "./pacman";
 import { Gate } from "./gate";
 import DazzledSkin from "./../../game/ressources/img/dazzled.png";
+import DeadSkin from "./../../game/ressources/img/dead.png";
 
 export class Ghost extends Sprite {
 
     private vulnerableState: boolean = false;
     private vulnerableTimerDefault: number = 600;
     private vulnerableTimer: number = this.vulnerableTimerDefault;
+    protected isEaten: boolean = false;
 
     protected speed = 3;
     protected currentDirection : Direction = Direction.None;
     protected defaultSkin : HTMLImageElement;
     protected vulnerableSkin : HTMLImageElement;
+    protected deadSkin : HTMLImageElement;
     protected directions: Array<Direction>;
 
     constructor(protected gameCanvas : GameCanvas, x : number, y : number, skin : any) {
@@ -27,6 +30,9 @@ export class Ghost extends Sprite {
 
         this.vulnerableSkin = new Image();
         this.vulnerableSkin.src = DazzledSkin;
+
+        this.deadSkin = new Image();
+        this.deadSkin.src = DeadSkin;
 
         this.update();
         this.collide();
@@ -43,7 +49,16 @@ export class Ghost extends Sprite {
 
             
             // Obtenir le skin courant
-            const currentSkin: HTMLImageElement = this.vulnerableState ? this.vulnerableSkin : this.defaultSkin;
+            let currentSkin: HTMLImageElement;
+            if (this.vulnerableState) {
+                if (this.isEaten) {
+                    currentSkin = this.deadSkin;
+                } else {
+                    currentSkin = this.vulnerableSkin;
+                }
+            } else {
+                currentSkin = this.defaultSkin;
+            }
 
             renderer.drawImage(currentSkin, 0, 0, this.size.w, this.size.h);
             this.ai();
@@ -53,6 +68,7 @@ export class Ghost extends Sprite {
                     this.vulnerableTimer -= 1;
                 } else {
                     this.vulnerableState = false;
+                    this.isEaten = false;
                 }
             }
 
@@ -76,7 +92,11 @@ export class Ghost extends Sprite {
             if (sprite instanceof Wall) {
             }
             else if (sprite instanceof PacMan) {
-                sprite.destroy();
+                if (this.vulnerableState) {
+                    this.isEaten = true;
+                } else {
+                    sprite.destroy();
+                }
             }
         }
     }
@@ -240,9 +260,6 @@ export class Ghost extends Sprite {
     setVulnerableState(): void {
         this.vulnerableState = true;
         this.vulnerableTimer = this.vulnerableTimerDefault;
-    }
-    
-    canEat(): boolean {
-        return this.vulnerableState;
+        this.isEaten = false;
     }
 }
