@@ -5,6 +5,7 @@ import InkyGhostSkin from "./../../game/ressources/img/inky.png";
 import { Direction } from "../utilities/enums";
 import { PacMan } from "./pacman";
 import { Sprite } from "../../engine/objects/sprite";
+import { GhostState } from "../enums/ghost-state";
 
 
 export class InkyGhost extends Ghost {
@@ -21,7 +22,7 @@ export class InkyGhost extends Ghost {
     }
 
     ai() {
-        if (this.isEaten) {
+        if (this.currentState === GhostState.Dead) {
             super.ai();
         } else {
             if (this.clock > 0) {

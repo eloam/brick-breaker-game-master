@@ -5,6 +5,7 @@ import ClydeGhostSkin from "./../../game/ressources/img/clyde.png";
 import { Direction } from "../utilities/enums";
 import { Sprite } from "../../engine/objects/sprite";
 import { PacMan } from "./pacman";
+import { GhostState } from "../enums/ghost-state";
 
 
 export class ClydeGhost extends Ghost {
@@ -21,7 +22,7 @@ export class ClydeGhost extends Ghost {
     }
 
     ai() {
-        if (this.isEaten) {
+        if (this.currentState === GhostState.Dead) {
             super.ai();
         } else {
             if (this.clock > 0) {

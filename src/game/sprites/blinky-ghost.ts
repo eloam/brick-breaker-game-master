@@ -5,6 +5,7 @@ import BlinkyGhostSkin from "./../../game/ressources/img/blinky.png";
 import { Direction } from "../utilities/enums";
 import { PacMan } from "./pacman";
 import { Sprite } from "../../engine/objects/sprite";
+import { GhostState } from "../enums/ghost-state";
 
 
 export class BlinkyGhost extends Ghost {
@@ -21,7 +22,7 @@ export class BlinkyGhost extends Ghost {
     }
 
     ai() {
-        if (this.isEaten) {
+        if (this.currentState === GhostState.Dead) {
             super.ai();
         } else {
             if (this.clock > 0) {

@@ -7,13 +7,15 @@ import { PacMan } from "./pacman";
 import { Gate } from "./gate";
 import DazzledSkin from "./../../game/ressources/img/dazzled.png";
 import DeadSkin from "./../../game/ressources/img/dead.png";
+import { GhostState } from "../enums/ghost-state";
 
 export class Ghost extends Sprite {
 
-    private vulnerableState: boolean = false;
-    private vulnerableTimerDefault: number = 600;
-    private vulnerableTimer: number = this.vulnerableTimerDefault;
-    protected isEaten: boolean = false;
+    protected currentState: GhostState = GhostState.Alive;
+    protected vulnerableDefaultTimer: number = 600;
+    protected deadDefaultTimer: number = 300;
+
+    protected timer: number = 0;
 
     protected speed = 3;
     protected currentDirection : Direction = Direction.None;
@@ -47,28 +49,30 @@ export class Ghost extends Sprite {
     update() {
         this.onUpdate = function (renderer: SpriteCanvasRenderingContext2D) {
 
-            
             // Obtenir le skin courant
             let currentSkin: HTMLImageElement;
-            if (this.vulnerableState) {
-                if (this.isEaten) {
-                    currentSkin = this.deadSkin;
-                } else {
+            switch (this.currentState) {
+                case GhostState.Alive:
+                    currentSkin = this.defaultSkin;
+                    break;
+                case GhostState.Vulnerable:
                     currentSkin = this.vulnerableSkin;
-                }
-            } else {
-                currentSkin = this.defaultSkin;
+                    break;
+                case GhostState.Dead:
+                    currentSkin = this.deadSkin;
+                    break;
+                default:
+                    currentSkin = this.defaultSkin;
+                    break;
             }
 
             renderer.drawImage(currentSkin, 0, 0, this.size.w, this.size.h);
             this.ai();
 
-            if (this.vulnerableState) {
-                if (this.vulnerableTimer > 0) {
-                    this.vulnerableTimer -= 1;
-                } else {
-                    this.vulnerableState = false;
-                    this.isEaten = false;
+            if (this.currentState !== GhostState.Alive) {
+                this.timer -= 1;
+                if (this.timer === 0) {
+                    this.currentState = GhostState.Alive;
                 }
             }
 
@@ -92,10 +96,19 @@ export class Ghost extends Sprite {
             if (sprite instanceof Wall) {
             }
             else if (sprite instanceof PacMan) {
-                if (this.vulnerableState) {
-                    this.isEaten = true;
-                } else {
-                    sprite.destroy();
+                switch (this.currentState) {
+                    case GhostState.Alive:
+                        sprite.destroy();
+                        break;
+                    case GhostState.Vulnerable:
+                        this.currentState = GhostState.Dead;
+                        this.timer = this.deadDefaultTimer;
+                        break;
+                    case GhostState.Dead:
+                        break;
+                    default:
+                        sprite.destroy();
+                        break;
                 }
             }
         }
@@ -240,26 +253,24 @@ export class Ghost extends Sprite {
         return Math.floor(Math.random() * Math.floor(max)) + 1;
     }
 
-    arrayCompare(array1 : Array<Direction>, array2 : Array<Direction>) {
-        if (!Array.isArray(array1) || !Array.isArray(array2) || array1.length !== array2.length) {
-            return false;
-        }
-
-        const arr1 = array1.concat().sort();
-        const arr2 = array2.concat().sort();
-
-        for (let i = 0; i < arr1.length; i++) {
-            if (arr1[i] !== arr2[i]) {
-                return false;
-            }
-        }
-
-        return true;
+    setVulnerableState(): void {
+        this.currentState = GhostState.Vulnerable;
+        this.timer = this.vulnerableDefaultTimer;
     }
 
-    setVulnerableState(): void {
-        this.vulnerableState = true;
-        this.vulnerableTimer = this.vulnerableTimerDefault;
-        this.isEaten = false;
+    private showAlternativeSkin(): boolean {
+        if (this.currentState === GhostState.Vulnerable) {
+            if (this.timer > this.vulnerableDefaultTimer * 0.2) {
+                return true;
+            } else {
+                if (this.timer % 30 > 15) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
     }
 }
