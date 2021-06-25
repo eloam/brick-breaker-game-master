@@ -56,10 +56,18 @@ export class Ghost extends Sprite {
                     currentSkin = this.defaultSkin;
                     break;
                 case GhostState.Vulnerable:
-                    currentSkin = this.vulnerableSkin;
+                    if (this.showAlternativeSkin()) {
+                        currentSkin = this.vulnerableSkin;
+                    } else {
+                        currentSkin = this.defaultSkin;
+                    }
                     break;
                 case GhostState.Dead:
-                    currentSkin = this.deadSkin;
+                    if (this.showAlternativeSkin()) {
+                        currentSkin = this.deadSkin;
+                    } else {
+                        currentSkin = this.defaultSkin;
+                    }
                     break;
                 default:
                     currentSkin = this.defaultSkin;
@@ -259,7 +267,7 @@ export class Ghost extends Sprite {
     }
 
     private showAlternativeSkin(): boolean {
-        if (this.currentState === GhostState.Vulnerable) {
+        if (this.currentState !== GhostState.Alive) {
             if (this.timer > this.vulnerableDefaultTimer * 0.2) {
                 return true;
             } else {
