@@ -90,13 +90,39 @@ export class Ghost extends Sprite {
     }
 
     ai() {
-        if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
-            this.currentDirection = this.getNewDirection(this.getPossibleMoveDirections());
+        // Default AI
+        if (this.currentState === GhostState.Alive) {
+            if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
+                this.currentDirection = this.getNewDirection(this.getPossibleMoveDirections());
+            }
+    
+            if (this.canMove(this.currentDirection)) {
+                this.makeMovement(this.currentDirection);
+            }
+        } else {
+            // Fear AI
+            if (this.canChangeDirection() || !this.canMove(this.currentDirection)) {
+        
+                // Liste des directions possibles
+                const directions: Array<Direction> = [];
+
+                // PacMan
+                const pacman: Sprite = this.gameCanvas.sprites.list().filter(sprite => sprite instanceof PacMan)[0];
+
+                // On detect les directions possibles
+                this.canMove(Direction.Left) && this.pos.x < pacman.pos.x && directions.push(Direction.Left);
+                this.canMove(Direction.Right) && this.pos.x > pacman.pos.x && directions.push(Direction.Right);
+                this.canMove(Direction.Up) && this.pos.y < pacman.pos.y && directions.push(Direction.Up);
+                this.canMove(Direction.Down) && this.pos.y > pacman.pos.y && directions.push(Direction.Down);
+
+                this.currentDirection = this.getNewDirection(directions.length > 0 ? directions : this.getPossibleMoveDirections());
+            }
+
+            if (this.canMove(this.currentDirection)) {
+                this.makeMovement(this.currentDirection);
+            }
         }
 
-        if (this.canMove(this.currentDirection)) {
-            this.makeMovement(this.currentDirection);
-        }
     }
 
     collide() {
@@ -162,6 +188,10 @@ export class Ghost extends Sprite {
             default:
                 break;
         }
+    }
+
+    getCurrentState(): GhostState {
+        return this.currentState;
     }
 
     getNewDirection(directions: Array<Direction>): Direction { 

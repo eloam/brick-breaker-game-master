@@ -28,6 +28,13 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
   },
+  /*plugins: [
+    new webpack.optimize.UglifyJsPlugin({
+      minimize: true,
+      sourceMap: true,
+      include: /\.min\.js$/,
+    })
+  ],*/
   plugins: [new HtmlWebpackPlugin()],
   devServer: {
     contentBase: path.join(__dirname, 'dist'),

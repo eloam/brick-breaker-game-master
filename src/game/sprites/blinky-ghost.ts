@@ -22,7 +22,7 @@ export class BlinkyGhost extends Ghost {
     }
 
     ai() {
-        if (this.currentState === GhostState.Dead) {
+        if (this.currentState !== GhostState.Alive) {
             super.ai();
         } else {
             if (this.clock > 0) {
