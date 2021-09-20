@@ -12,6 +12,7 @@ import PacmanWakaWakaSoundEffect from '../ressources/sounds/PacmanWakaWakaSoundE
 import PacmanOpeningSongSoundEffect from '../ressources/sounds/PacmanOpeningSongSoundEffect.mp3';
 import PacmanDeathSoundEffect from '../ressources/sounds/pacman_death.mp3';
 import { SuperPacGum } from "./super-pacgum";
+import { GhostState } from "../enums/ghost-state";
 
 export class PacMan extends Sprite {
 
@@ -134,13 +135,15 @@ export class PacMan extends Sprite {
                 var pacgumCount = this.gameCanvas.sprites.list().filter(item => item instanceof PacGum).length;
                 console.log(pacgumCount);
                 if (pacgumCount == 1) {
-                    console.log('You Win !');
+                    this.win();
                     this.destroy();
                 }
             }
 
             if (sprite instanceof Ghost) {
-                new Audio(PacmanDeathSoundEffect).play();
+                if (sprite.getCurrentState() === GhostState.Alive) {
+                    new Audio(PacmanDeathSoundEffect).play();
+                }
             }
         }
     }
@@ -261,6 +264,12 @@ export class PacMan extends Sprite {
 
     moveDown() {
         this.pos.y += this.speed;
+    }
+
+
+    win() {
+        console.log('You Win !');
+        
     }
 
 }
